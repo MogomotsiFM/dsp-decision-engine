@@ -79,25 +79,18 @@ class ChildTree(BaseModel):
         return self
 
     def add_node(self, value: TOutput, condition: TCond, **kwargs) -> ConditionedNode:
-        len_value = ConditionedNode._length_attr(value)
-        len_condition = ConditionedNode._length_attr(condition)
-        if len_value != 1 and len_condition != 1 and len_value != len_condition:
-            raise ValueError(
-                f"Cannot add node as the length of the value ({len_value}) is not compatible with the length of the condition ({len_condition})."
-            )
-        if len_value != 1 or len_condition != 1:
+        # Defer to the ConditionedNode model validator
+        node = ConditionedNode(value=value, condition=condition, **kwargs)
+        len_node = len(node)
+        if len_node != 1:
             # TODO adding this allows better validation but requires circular loops so hard for pydantic to serialise
             # len_tree = len(self.root_tree.root)
             len_tree = len(self)
-            if len_value != 1 and len_tree != 1 and len_value != len_tree:
+
+            if len_tree != 1 and len_tree != len_node:
                 raise ValueError(
-                    f"Cannot add node as the length of the value ({len_value}) incompatible with tree {len_tree}."
+                    f"Cannot add a node as it's length ({len_node}) is incompatible with tree {len_tree}."
                 )
-            if len_condition != 1 and len_tree != 1 and len_condition != len_tree:
-                raise ValueError(
-                    f"Cannot add node as the length of the condition ({len_condition}) incompatible with tree {len_tree}."
-                )
-        node = ConditionedNode(value=value, condition=condition, **kwargs)
         self.nodes.append(node)
         return node
 
