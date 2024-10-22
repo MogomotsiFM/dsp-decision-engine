@@ -224,11 +224,13 @@ def test_merge_subtrees_with_defaults(tree):
 
 
 def test_circular_dep_tree(tree):
+    tree.condition(output=value(100), condition="SubA")
+    tree.condition(output=value(200), condition="SubB")
 
-    # TODO this should raise an error
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Tree must not contain any loops"):
         tree.include_subtree(tree, condition="A")
-    # TODO this should work
+
+    # This should work
     tree.include_subtree(tree.copy(), condition="A")
 
     subtree_1 = Tree()
